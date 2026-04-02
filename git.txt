@@ -1,0 +1,16 @@
+git config --global user.name 'your username'
+git config --global user.name 'your email address'
+git config --list
+
+echo "# Market-Real-Time-Stock-Analysis" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/onyinye8/Market-Real-Time-Stock-Analysis.git
+git push -u origin main
+
+
+docker run --rn confluentinc/cp-kafka:7.4.10 kafka-storage random-uuid
+
+K5RQzTlsTluE6hEqhI5keQ
