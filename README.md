@@ -104,7 +104,7 @@ This will start:
 
 | Service    | URL                                            |
 | ---------- | ---------------------------------------------- |
-| Kafka UI   | [http://localhost:8080](http://localhost:8080) |
+| Kafka UI   | [http://localhost:8085](http://localhost:8085) |
 | pgAdmin    | [http://localhost:5050](http://localhost:5050) |
 | PostgreSQL | localhost:5432                                 |
 
