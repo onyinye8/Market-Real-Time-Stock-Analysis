@@ -9,7 +9,7 @@ services:
       - spark-master
       - --port
       - "7077"
-      - --webui-port
+      - --wei-port
       - "8080"
     environment:
       SPARK_MODE: master
@@ -40,8 +40,8 @@ services:
     hostname: kafka
     ports:
       - "9092:9092"
-      - "9094:9094"
-    environment:
+      - "9093:9093"
+  environment:
       KAFKA_KRAFT_MODE: "true"
       KAFKA_PROCESS_ROLES: controller,broker
       KAFKA_NODE_ID: 1
@@ -50,16 +50,16 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAME: CONTROLLER
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9092,PLAINTEXT_EXTERNAL://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9092,PLAINTEXT_EXTERNAL://kafka:9094
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_HOURS: 168
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      CLUSTER_ID: "K5RQzTlsTluE6hEqhI5keQ"
-    volumes:
+      CLUSTER_ID: "K5RQzTlsTluE6hEqhI5keQ"    
+  volumes:
       - kafka_data:/var/lib/kafka/data
-    networks:
+  networks:
       - stock_data
 
   kafka-ui:
@@ -112,3 +112,132 @@ volumes:
 
 networks:
   stock_data:
+
+
+
+
+
+# version: "3.9"
+
+# volumes:
+#   kafka_data:
+#   postgres_data:
+
+# networks:
+#   stock_data:
+
+# services:
+#   # ---------------- POSTGRES ----------------
+#   postgres_db:
+#     image: debezium/postgres:17
+#     container_name: postgres_db
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: postgres
+#       POSTGRES_DB: stock_data
+#     ports:
+#       - "5434:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - stock_data
+
+#   # ---------------- PGADMIN ----------------
+#   pgadmin:
+#     image: dpage/pgadmin4:9
+#     container_name: pgadmin
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@admin.com
+#       PGADMIN_DEFAULT_PASSWORD: admin
+#     ports:
+#       - "5050:80"
+#     networks:
+#       - stock_data
+
+#   # ---------------- KAFKA KRAFT ----------------
+#   kafka:
+#     image: confluentinc/cp-kafka:7.4.10
+#     container_name: kafka
+#     hostname: kafka
+#     ports:
+#       - "9092:9092"   # client access
+#       - "9093:9093"   # controller internal
+#     environment:
+#       KAFKA_KRAFT_MODE: "true"
+#       KAFKA_PROCESS_ROLES: "broker,controller"
+#       KAFKA_NODE_ID: 1
+#       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+
+#       # Internal listeners
+#       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+#       # Only broker listener advertised externally
+#       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+
+#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+#       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+#       KAFKA_LOG_DIRS: /var/lib/kafka/data
+#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+#       CLUSTER_ID: "K5RQzTlsTluE6hEqhI5keQ"
+#     volumes:
+#       - kafka_data:/var/lib/kafka/data
+#     networks:
+#       - stock_data
+
+#   # ---------------- KAFKA UI ----------------
+#   kafka-ui:
+#     image: provectuslabs/kafka-ui:v0.7.2
+#     container_name: kafka-ui
+#     ports:
+#       - "8085:8080"
+#     depends_on:
+#       - kafka
+#     environment:
+#       KAFKA_CLUSTERS_0_NAME: local
+#       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9092
+#       DYNAMIC_CONFIG_ENABLED: "true"
+#     networks:
+#       - stock_data
+
+#   # ---------------- SPARK MASTER ----------------
+#   spark-master:
+#     image: spark:3.5.1-python3
+#     container_name: spark-master
+#     ports:
+#       - "7077:7077"
+#       - "8081:8080"
+#     environment:
+#       SPARK_MODE: master
+#     networks:
+#       - stock_data
+
+#   # ---------------- SPARK WORKER ----------------
+#   spark-worker:
+#     image: spark:3.5.1-python3
+#     container_name: spark-worker
+#     environment:
+#       SPARK_MODE: worker
+#       SPARK_MASTER: spark://spark-master:7077
+#     depends_on:
+#       - spark-master
+#     networks:
+#       - stock_data
+
+
+# consumer:
+#   build:
+#     context: ./consumer #use same Apache Spark image for PySpark streaming
+#     dockerfiles: Dockerfile
+#   image: stream_consumer
+#   container_name: consumer #Assign a name for the streaming job container
+#   depends_on:
+#     - spark-master
+#     - kafka   # Wait for Kafka and Spark to be online before starting 
+#   restart: unless-stopped
+#   volumes:
+#     - ivy_cache:/opt/spark/work-dir/.ivy2
+#     - ./consumer:/opt/spark/work-dir/apps
+#   networks:
+#     - stock_data
